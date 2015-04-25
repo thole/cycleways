@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+  <title>Cycleways</title>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <style>
+      body {
+        font-family: "Helvetica Neue", "Helvetica";
+        background-color: #fce74e;
+        color: #636363;
+      }
+
+      .city {
+        padding:40px;
+        float:left;
+        display:block;
+      }
+
+      .summary {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 400px;
+        font-size: 13px;
+      }
+
+      .headline {
+        padding-top: 40px;
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+
+     .headline h1 {
+        font-size: 32px;
+        font-weight: normal;
+        line-height: 32px;
+        margin: 0;
+        color: #636363;
+      }
+
+      text {
+        font-size : 8pt;
+        font-family: "Helvetica Neue", "Helvetica";
+        fill:#636363;
+      }
+
+      .citytitle{
+        font-size:  20pt;
+        font-family: "Helvetica Neue", "Helvetica";
+        font-weight: bold;
+      }
+
+      .citysubtitle{
+        font-size:  10pt;
+        font-family: "Helvetica Neue", "Helvetica";
+        font-weight: bold;
+      }
+
+      path.cycle {
+        fill: none;
+        stroke: #5f556e;
+        stroke-width:0.6px;
+        stroke-opacity:1;
+      }
+
+    </style>
+    <script type="text/javascript" src="http://thole.github.io/lib/d3/d3.v5.js"></script>
+    <script type="text/javascript" src="http://thole.github.io/lib/topojson/topojson.v1.js"></script>
+  </head>
+  <body>
+    <div class="headline">
+      <div class="dateline">April 25, 2015</div>
+      <div class="summary">
+        Roads dedicated to cyclists on separate right of way. Data source <a href="http://www.openstreetmap.org/">OpenStreetMap</a> - licensed under <a href="http://opendatacommons.org/licenses/odbl/">ODbL</a>
+      </div>
+    </div>
+
+
+    <div id="container"></div>
+    <div class="city">
+      <svg id="title_amsterdam" height="300" width="200"><text x="0" y="25" class="citytitle">Amsterdam</text></svg>
+      <svg id="map_amsterdam"></svg>
+    </div>
+    <div class="city">
+      <svg id="title_hamburg" height="300" width="200"><text x="0" y="25" class="citytitle">Hamburg</text></svg>
+      <svg id="map_hamburg"></svg>
+    </div>
+    <div class="city">
+      <svg id="title_berlin" height="300" width="200"><text x="0" y="25" class="citytitle">Berlin</text></svg>
+      <svg id="map_berlin"></svg>
+    </div>
+    <div class="city">
+      <svg id="title_kopenhagen"height="300" width="200"><text x="0" y="25" class="citytitle">Copenhagen</text></svg>
+      <svg id="map_kopenhagen"></svg>
+    </div>
+    <div class="city">
+      <svg id="title_bremen" height="300" width="200"><text x="0" y="25" class="citytitle">Bremen</text></svg>
+      <svg id="map_bremen"></svg>
+    </div>
+    <div class="city">
+      <svg id="title_muenster" height="300" width="200"><text x="0" y="25" class="citytitle">Muenster</text></svg>
+      <svg id="map_muenster"></svg>
+    </div>    
+
+    <script type="text/javascript">
+
+  var city_coordinates = {
+    hamburg: [10.0, 53.55],
+    berlin : [13.41, 52.52],
+    muenster : [7.63,51.96],
+    kopenhagen : [12.58,55.68],
+    amsterdam : [4.89,52.37],
+    bremen : [8.81,53.08]
+  }
+
+  function getName(roads){
+    for(var attr in roads.objects){
+      return attr;
+    }
+    return false;
+  }
+
+
+  function drawRoute(error, act){
+
+    var width = 300,
+        height = 300;
+    
+    var projection = d3.geo.albers()
+      .center(city_coordinates[getName(act)]) 
+      .rotate([0, 0])
+      .parallels([50, 60])
+      .scale(100000)
+      .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path()
+       .projection(projection);
+
+    var svg = d3.select("#map_" + getName(act))
+       .attr("width", width)
+       .attr("height", height)
+
+    var viz = svg.append("g");
+
+    viz.selectAll(".cycle")
+      .data(topojson.feature(act, act.objects[getName(act)]).features)
+    .enter().append("path")
+      .attr("name", function(d) { return d.properties.name; })
+      .attr("class","cycle")
+      .attr("d", path)
+
+    var svgtitle = d3.select("#title_" + getName(act));
+    svgtitle.append("text")
+      .attr("class","citysubtitle")
+      .attr("x",0)
+      .attr("y",45)
+      .text("#" + act.objects[getName(act)].geometries.length);
+  }
+
+  d3.json("berlin.topojson", drawRoute);
+  d3.json("hamburg.topojson", drawRoute);
+  d3.json("bremen.topojson", drawRoute);
+  d3.json("muenster.topojson", drawRoute);
+  d3.json("kopenhagen.topojson", drawRoute);
+  d3.json("amsterdam.topojson", drawRoute);
+
+  </script>
+ </body>
+</html>
